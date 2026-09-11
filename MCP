@@ -1,0 +1,97 @@
+Work ONLY on the existing branch `evil-canvas-mcp`. Do NOT modify `main`.
+
+Repository: xenarodriguez6-tech/Evil-Draws
+
+Goal: add the smallest safe MCP/HTTP bridge scaffold for the Evil Canvas project.
+
+Current repository is essentially empty, so create this minimal structure:
+
+evil-canvas-bridge/
+├── server/
+│   ├── index.js
+│   └── canvas-store.js
+├── package.json
+├── README.md
+└── .gitignore
+
+Requirements:
+
+1. HTTP API
+Implement these endpoints:
+- GET /api/canvas
+- POST /api/draw
+- POST /api/erase
+- DELETE /api/canvas
+
+Use a minimal in-process/persistent JSON stroke store. Do not introduce a database or framework unless absolutely necessary.
+
+2. MCP endpoint
+Implement:
+- POST /mcp
+
+Use JSON-RPC 2.0 and expose these MCP tools:
+- draw
+- erase
+- clear_canvas
+- read_canvas
+
+The MCP endpoint must support at minimum:
+- initialize
+- tools/list
+- tools/call
+
+Tool behavior should map directly to the HTTP/store operations.
+
+3. Drawing representation
+Keep the initial representation deliberately simple. A stroke can contain:
+- points: [{x, y}, ...]
+- optional width
+- optional color
+
+`draw` should append a stroke.
+`erase` should remove an appropriate stroke or strokes.
+`clear_canvas` should clear all strokes.
+`read_canvas` should return the current canvas state.
+
+4. Security
+Restrict browser access with CORS/origin handling appropriate for ChatGPT:
+- https://chatgpt.com
+- https://chat.openai.com
+- https://openai.com
+
+Do not add authentication yet. Keep the scaffold small.
+
+5. Error handling
+Return sensible JSON errors for malformed requests and unknown MCP methods/tools.
+
+6. Tests
+Add only lightweight tests sufficient to verify:
+- MCP initialize
+- MCP tools/list
+- MCP draw
+- MCP read_canvas
+- MCP erase
+- MCP clear_canvas
+- malformed MCP request handling
+
+7. Documentation
+README.md should explain:
+- what the bridge does
+- how to install dependencies
+- how to run it
+- the HTTP endpoints
+- the MCP endpoint
+- the available MCP tools
+- that this is a scaffold intended to be connected to the deployed Evil Canvas later
+
+8. Do NOT build or replace the canvas frontend.
+Do NOT modify files outside this scaffold unless required.
+Do NOT touch `main`.
+Do NOT add deployment infrastructure yet.
+
+After implementation:
+- run the tests
+- make sure the project starts successfully
+- commit everything to `evil-canvas-mcp`
+- commit message: `Add Evil Canvas MCP HTTP bridge scaffold`
+- report the commit SHA and the files created.
