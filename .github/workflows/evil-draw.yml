@@ -1,0 +1,68 @@
+name: Evil Draw
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  draw:
+    if: startsWith(github.event.issue.title, '[evil-draw]')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Draw on Evil Canvas
+        env:
+          CANVAS_URL: https://evil-canvas-c7f8du.v2.appdeploy.ai/api/draw
+          BRIDGE_SECRET: ${{ secrets.BRIDGE_SECRET }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          set -euo pipefail
+
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          body = os.environ.get("ISSUE_BODY") or ""
+          data = json.loads(body)
+
+          points = data["points"]
+
+          if not isinstance(points, list) or not points:
+              raise SystemExit("points must be a non-empty array")
+
+          payload = json.dumps({
+              "points": points
+          }).encode()
+
+          headers = {
+              "Content-Type": "application/json",
+          }
+
+          secret = os.environ.get("BRIDGE_SECRET")
+          if secret:
+              headers["Authorization"] = f"Bearer {secret}"
+
+          request = urllib.request.Request(
+              os.environ["CANVAS_URL"],
+              data=payload,
+              headers=headers,
+              method="POST",
+          )
+
+          with urllib.request.urlopen(request, timeout=30) as response:
+              result = response.read().decode()
+              print(f"Canvas response: {result}")
+          PY
+
+      - name: Close command issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue close "$ISSUE_NUMBER" \
+            --repo "${{ github.repository }}" \
+            --comment "Evil Canvas draw request executed."
